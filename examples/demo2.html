@@ -5,65 +5,105 @@
     <title>three.js - demo2</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <script type="text/javascript" src="../libs/three.js"></script>
+    <script src="../libs/three.js"></script>
+    <script src="js/OrbitControls.js"></script>
     <style>
         body {
             margin: 0px;
             overflow: hidden;
+            background-color: #ccccff;
         }
     </style>
 </head>
 
 <body>
-    <div id="WebGL-output">
-    </div>
-    <!-- Javascript code that runs our Three.js examples -->
+    <div id="webgl-3d" style="z-index:1;position:absolute;left:0;top:0"></div>
     <script type="text/javascript">
+        //全局变量(容器，场景、相机、渲染器)
+        var container, scene, camera, renderer, controls;
+
+        //初始化
+        init();
+        //动画循环
+        animate();
+
         function init() {
-            var scene = new THREE.Scene(); //生成一个场景
-            //生成一个相机
-            var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000); //视场，长宽比，近面，远面
-            //  camera.position.x=-20;
-            //  camera.position.y=40;
-            //  camera.position.z=30;
-            camera.position.set(-10, 70, 100);
+            //Scene 场景
+            scene = new THREE.Scene();
+
+            //Camera 相机（视线辐射的角度、图像内容展示的比例、相机离展示内容（正方体）最近的距离和最远的距离）
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 150, 400); //defaults position (0,0,0),(1, 1, 5)就是把我们的相机往右和往上移动了1个单位，往后移动了5个单位
             camera.lookAt(scene.position);
-            //生成一个渲染器
-            var render = new THREE.WebGLRenderer({
+            scene.add(camera);
+
+            //Renderer 渲染器
+            renderer = new THREE.WebGLRenderer({
                 antialias: true
             });
-            render.setClearColor(0xEEEEEE);
-            render.setSize(window.innerWidth, window.innerHeight);
-            //生成一个坐标轴，辅助线，坐标轴的参数
-            var axes = new THREE.AxisHelper(20);
-            //生成一个网格
-            var gridXZ = new THREE.GridHelper(80, 10, 0xEED5B7, 0xEED5B7);
-            gridXZ.position.set(80, 0, 80);
-            this.mesh.add(gridXZ);
-            //生成一个平面
-            var planeGeometry = new THREE.PlaneGeometry(120, 30, 5, 5); //注意参数
-            //生成一个材质，设置材质的颜色，同时显示线框
-            var planeMaterial = new THREE.MeshBasicMaterial({
-                color: 0xcccccc,
-                wireframe: true
-            });
-            //生成一个网格，将平面和材质放在一个网格中，组合在一起，组成一个物体
-            var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-            plane.rotation.x = -0.5 * Math.PI;
-            // plane.position.x = 15;
-            // plane.position.y = 5;
-            // plane.position.z = 0;
-            plane.position.set(15, 0, 0);
+            renderer.setSize(window.innerWidth, window.innerHeight);
 
-            //将相机，渲染器，坐标轴，平面都追加到场景中，然后对场景和相机进行渲染
-            scene.add(camera);
-            //  scene.add(render);
-            // scene.add(axes);
-            scene.add(plane);
-            render.render(scene, camera);
-            document.getElementById("WebGL-output").append(render.domElement);
-        };
-        window.onload = init;
+            container = document.getElementById('webgl-3d');
+            container.appendChild(renderer.domElement);
+
+            //Controls move mouse
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+            var light = new THREE.PointLight(0xffffff);
+            light.position.set(0, 250, 0);
+            scene.add(light);
+
+            //Geometry
+            // Create an array of materials to be used in a cube, one for each side
+            var cubeMaterialArray = [];
+            // order to add materials: x+,x-,y+,y-,z+,z-
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
+                color: 0xff3333
+            }));
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
+                color: 0xff8800
+            }));
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
+                color: 0xffff33
+            }));
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
+                color: 0x33ff33
+            }));
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
+                color: 0x3333ff
+            }));
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
+                color: 0x8833ff
+            }));
+            var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
+            // Cube parameters: width (x), height (y), depth (z), 
+            //        (optional) segments along x, segments along y, segments along z
+            var cubeGeometry = new THREE.CubeGeometry(100, 50, 10, 1, 1, 1);
+            // using THREE.MeshFaceMaterial() in the constructor below
+            //   causes the mesh to use the materials stored in the geometry
+            cube = new THREE.Mesh(cubeGeometry, cubeMaterials);
+            cube.position.set(-100, 50, -50);
+            scene.add(cube);
+
+            var gridXZ = new THREE.GridHelper(500, 10);
+            gridXZ.setColors(new THREE.Color(0x006600), new THREE.Color(0x006600));
+            gridXZ.position.set(100, 25, 100);
+            scene.add(gridXZ);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            render();
+            update();
+        }
+
+        function update() {
+            controls.update();
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
     </script>
 </body>
 
