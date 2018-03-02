@@ -7,20 +7,26 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <script src="../libs/three.js"></script>
     <script src="js/OrbitControls.js"></script>
+    <script src="js/dat.gui.js"></script>
+    <script src="http://stemkoski.github.io/Three.js/js/Detector.js"></script>
     <style>
         body {
+            font-family: Monospace;
+            font-weight: bold;
+            background-color: #ccccff;
             margin: 0px;
             overflow: hidden;
-            background-color: #ccccff;
         }
     </style>
 </head>
 
 <body>
-    <div id="webgl-3d" style="z-index:1;position:absolute;left:0;top:0"></div>
+    <div id="webgl-3d" style="z-index:0;position:absolute;left:0;top:0"></div>
     <script type="text/javascript">
         //全局变量(容器，场景、相机、渲染器)
         var container, scene, camera, renderer, controls;
+
+        var camera_x, camera_y, camera_z;
 
         //初始化
         init();
@@ -28,19 +34,30 @@
         animate();
 
         function init() {
+            parameters = {
+                a: 450,
+                b: 340,
+                c: 475
+            };
+            camera_x = parameters.a;
+            camera_y = parameters.b;
+            camera_z = parameters.c;
             //Scene 场景
             scene = new THREE.Scene();
 
-            //Camera 相机（视线辐射的角度、图像内容展示的比例、相机离展示内容（正方体）最近的距离和最远的距离）
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.set(0, 150, 400); //defaults position (0,0,0),(1, 1, 5)就是把我们的相机往右和往上移动了1个单位，往后移动了5个单位
+            //Camera 相机（仰角、长宽比、 近裁剪面、远裁剪面）  
+            camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 20000);
+            camera.position.set(camera_x, camera_y, camera_z); //defaults position (0,0,0),(1, 1, 5)就是把我们的相机往右和往上移动了1个单位，往后移动了5个单位
             camera.lookAt(scene.position);
             scene.add(camera);
 
-            //Renderer 渲染器
-            renderer = new THREE.WebGLRenderer({
-                antialias: true
-            });
+            // RENDERER
+            if (Detector.webgl)
+                renderer = new THREE.WebGLRenderer({
+                    antialias: true
+                });
+            else
+                renderer = new THREE.CanvasRenderer();
             renderer.setSize(window.innerWidth, window.innerHeight);
 
             container = document.getElementById('webgl-3d');
@@ -53,42 +70,79 @@
             light.position.set(0, 250, 0);
             scene.add(light);
 
+            // SKYBOX
+            var skyBoxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
+            var skyBoxMaterial = new THREE.MeshBasicMaterial({
+                color: '#f7f7f7',
+                side: THREE.BackSide
+            });
+            var skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterial);
+            scene.add(skyBox);
+
             //Geometry
             // Create an array of materials to be used in a cube, one for each side
             var cubeMaterialArray = [];
             // order to add materials: x+,x-,y+,y-,z+,z-
             cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 0xff3333
+                color: 'gray'
             }));
             cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 0xff8800
+                color: 'gray'
             }));
             cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 0xffff33
+                color: 'gray'
             }));
             cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 0x33ff33
+                color: 'gray'
             }));
             cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 0x3333ff
+                color: 'gray'
             }));
             cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 0x8833ff
+                color: 'gray'
             }));
             var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
             // Cube parameters: width (x), height (y), depth (z), 
             //        (optional) segments along x, segments along y, segments along z
-            var cubeGeometry = new THREE.CubeGeometry(100, 50, 10, 1, 1, 1);
+            var cubeGeometry = new THREE.CubeGeometry(80, 5, 50, 1, 1, 1);
             // using THREE.MeshFaceMaterial() in the constructor below
             //   causes the mesh to use the materials stored in the geometry
             cube = new THREE.Mesh(cubeGeometry, cubeMaterials);
-            cube.position.set(-100, 50, -50);
+            cube.position.set(100, 28, 100);
             scene.add(cube);
 
-            var gridXZ = new THREE.GridHelper(500, 10);
-            gridXZ.setColors(new THREE.Color(0x006600), new THREE.Color(0x006600));
-            // gridXZ.position.set(100, 25, 100);
+            var gridXZ = new THREE.GridHelper(450, 21, '#c1c1c1', '#c1c1c1');
+            // gridXZ.setColors(new THREE.Color('#c1c1c1'));
+            gridXZ.position.set(100, 25, 100);
             scene.add(gridXZ);
+
+            var axes = new THREE.AxisHelper(100);
+            axes.position.set(100, 25, 100);
+            scene.add(axes);
+
+            gui = new dat.GUI();
+            // parameters = { a: 40, b: 120,c:-480 };
+            var aGUI = gui.add(parameters, 'a').min(-1000).max(1000).step(5).name("camera_x").listen();
+            aGUI.onChange(
+                function (value) {
+                    camera_x = parameters.a;
+                    camera.position.set(camera_x, camera_y, camera_z);
+                }
+            );
+            var bGUI = gui.add(parameters, 'b').min(-1000).max(1000).step(5).name("camera_y").listen();
+            bGUI.onChange(
+                function (value) {
+                    camera_y = parameters.b;
+                    camera.position.set(camera_x, camera_y, camera_z);
+                }
+            );
+            var cGUI = gui.add(parameters, 'c').min(-1000).max(1000).step(5).name("camera_z").listen();
+            cGUI.onChange(
+                function (value) {
+                    camera_z = parameters.c;
+                    camera.position.set(camera_x, camera_y, camera_z);
+                }
+            );
         }
 
         function animate() {
