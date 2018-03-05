@@ -73,7 +73,7 @@
             // SKYBOX
             var skyBoxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
             var skyBoxMaterial = new THREE.MeshBasicMaterial({
-                color: '#f7f7f7',
+                color: '#f9f9f9',
                 side: THREE.BackSide
             });
             var skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterial);
@@ -81,44 +81,64 @@
 
             //Geometry
             // Create an array of materials to be used in a cube, one for each side
-            var cubeMaterialArray = [];
             // order to add materials: x+,x-,y+,y-,z+,z-
-            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 'gray'
-            }));
-            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 'gray'
-            }));
-            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 'gray'
-            }));
-            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 'gray'
-            }));
-            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 'gray'
-            }));
-            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
-                color: 'gray'
-            }));
-            var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
+            var texture1 = new THREE.TextureLoader().load('images/top-bottom.jpg', function (texture) {});
+            var texture2 = new THREE.TextureLoader().load('images/left-right.jpg', function (texture) {});
+            var cubeMaterialArray = [
+                new THREE.MeshBasicMaterial({
+                    map: texture1
+                }),
+                new THREE.MeshBasicMaterial({
+                    map: texture1
+                }),
+                new THREE.MeshBasicMaterial({
+                    map: texture2
+                }),
+                new THREE.MeshBasicMaterial({
+                    map: texture2
+                }),
+                new THREE.MeshBasicMaterial({
+                    map: texture1
+                }),
+                new THREE.MeshBasicMaterial({
+                    map: texture1
+                }),
+            ];
+
+            // var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
             // Cube parameters: width (x), height (y), depth (z), 
             //        (optional) segments along x, segments along y, segments along z
             var cubeGeometry = new THREE.CubeGeometry(80, 5, 50, 1, 1, 1);
             // using THREE.MeshFaceMaterial() in the constructor below
             //   causes the mesh to use the materials stored in the geometry
-            cube = new THREE.Mesh(cubeGeometry, cubeMaterials);
+            cube = new THREE.Mesh(cubeGeometry, cubeMaterialArray);
             cube.position.set(100, 28, 100);
             scene.add(cube);
+
+
+            //边框
+            var border = new THREE.BoxHelper(cube, '#5f8ad4');
+            scene.add(border);
 
             var gridXZ = new THREE.GridHelper(450, 21, '#c1c1c1', '#c1c1c1');
             // gridXZ.setColors(new THREE.Color('#c1c1c1'));
             gridXZ.position.set(100, 25, 100);
             scene.add(gridXZ);
 
-            var axes = new THREE.AxisHelper(100);
+            var axes = new THREE.AxesHelper(100);
             axes.position.set(100, 25, 100);
             scene.add(axes);
+
+            //创建圆柱体
+            var cylinderGeo = new THREE.CylinderGeometry(2, 2, 5, 0, 0, true);
+            var cylinderMat = new THREE.MeshLambertMaterial({ //创建材料
+                color: '#000',
+                wireframe: true
+            });
+            //创建圆柱体网格模型
+            var cylinderMesh = new THREE.Mesh(cylinderGeo, cylinderMat);
+            cylinderMesh.position.set(100, 28, 80); //设置圆柱坐标
+            scene.add(cylinderMesh); //向场景添加圆柱体
 
             gui = new dat.GUI();
             // parameters = { a: 40, b: 120,c:-480 };
