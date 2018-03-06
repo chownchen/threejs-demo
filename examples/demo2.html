@@ -34,7 +34,7 @@
         animate();
 
         function init() {
-            parameters = {
+            var parameters = {
                 a: 450,
                 b: 340,
                 c: 425
@@ -111,8 +111,8 @@
             // var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
             // Cube parameters: width (x), height (y), depth (z), 
             //        (optional) segments along x, segments along y, segments along z
-            // var cubeGeometry = new THREE.CubeGeometry(120, 5, 60, 1, 1, 1);
-            var cubeGeometry = new THREE.CubeGeometry(600, 9, 166, 1, 1, 1);
+            var cubeGeometry = new THREE.CubeGeometry(120, 5, 60, 1, 1, 1);
+            // var cubeGeometry = new THREE.CubeGeometry(600, 9, 166, 1, 1, 1);
             // using THREE.MeshFaceMaterial() in the constructor below
             //   causes the mesh to use the materials stored in the geometry
             cube = new THREE.Mesh(cubeGeometry, cubeMaterialArray);
@@ -125,44 +125,30 @@
             var border = new THREE.BoxHelper(cube, '#3e82f7');
             scene.add(border);
 
+            //网格
             var gridXZ = new THREE.GridHelper(450, 21, '#c1c1c1', '#c1c1c1');
-            // gridXZ.setColors(new THREE.Color('#c1c1c1'));
-            // gridXZ.position.set(100, 25, 100);
             gridXZ.position.set(0, 0, 0);
             scene.add(gridXZ);
 
+            //x、y、z坐标轴
             var axes = new THREE.AxesHelper(100);
-            // axes.position.set(100, 25, 100);
             gridXZ.position.set(0, 0, 0);
             scene.add(axes);
 
             //创建圆柱体
-            var cylinderGeo = new THREE.CylinderGeometry(2, 2, 5, 0, 0);
-            var cylinderMat = new THREE.MeshLambertMaterial({
-                color: '#f9f9f9'
+            var holes = [];
+            var cylinderGeo = new THREE.CylinderGeometry(2, 2, 5, 50, 50, false);
+            var cylinderMat = new THREE.MeshBasicMaterial({
+                color: '#000',
+                // wireframe: true
             });
-            cylinderGeo.parameters.openEnded = false;
+
             //创建圆柱体网格模型
             var cylinderMesh = new THREE.Mesh(cylinderGeo, cylinderMat);
-            // cylinderMesh.position.set(0, 3, 0); //设置圆柱坐标
             cylinderMesh.position.set(50, 3, 20); //设置圆柱坐标
             scene.add(cylinderMesh); //向场景添加圆柱体
 
-            //创建圆柱体
-            var cylinderGeo1 = new THREE.CylinderGeometry(5, 5, 15, 0, 0);
-            var cylinderMat1 = new THREE.MeshLambertMaterial({
-                color: '#f8f8f8'
-                // color: '#000'
-            });
-            cylinderGeo1.parameters.openEnded = false;
-            //创建圆柱体网格模型
-            var cylinderMesh1 = new THREE.Mesh(cylinderGeo1, cylinderMat1);
-            // cylinderMesh1.position.set(0, 3, 0); //设置圆柱坐标
-            cylinderMesh.position.set(50, 3, 20); //设置圆柱坐标
-            scene.add(cylinderMesh1); //向场景添加圆柱体
-
             gui = new dat.GUI();
-            // parameters = { a: 40, b: 120,c:-480 };
             var aGUI = gui.add(parameters, 'a').min(-1000).max(1000).step(5).name("camera_x").listen();
             aGUI.onChange(
                 function (value) {
