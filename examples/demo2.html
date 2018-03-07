@@ -45,8 +45,8 @@
             //Scene 场景
             scene = new THREE.Scene();
 
-            //Camera 相机（仰角、长宽比、 近裁剪面、远裁剪面）  
-            camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 20000);
+            //Camera 相机（仰角、长宽比、 近裁剪面、远裁剪面）
+            camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 20000);
             camera.position.set(camera_x, camera_y, camera_z); //defaults position (0,0,0),(1, 1, 5)就是把我们的相机往右和往上移动了1个单位，往后移动了5个单位
             camera.lookAt(scene.position);
             scene.add(camera);
@@ -58,6 +58,7 @@
                 });
             else
                 renderer = new THREE.CanvasRenderer();
+            renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
 
             container = document.getElementById('webgl-3d');
@@ -112,7 +113,7 @@
             // Cube parameters: width (x), height (y), depth (z), 
             //        (optional) segments along x, segments along y, segments along z
             var cubeGeometry = new THREE.CubeGeometry(120, 5, 60, 1, 1, 1);
-            // var cubeGeometry = new THREE.CubeGeometry(600, 9, 166, 1, 1, 1);
+            // var cubeGeometry = new THREE.CubeGeometry(120, 120, 10, 1, 1, 1);
             // using THREE.MeshFaceMaterial() in the constructor below
             //   causes the mesh to use the materials stored in the geometry
             cube = new THREE.Mesh(cubeGeometry, cubeMaterialArray);
@@ -131,22 +132,52 @@
             scene.add(gridXZ);
 
             //x、y、z坐标轴
-            var axes = new THREE.AxesHelper(100);
+            var axes = new THREE.AxesHelper(450);
             gridXZ.position.set(0, 0, 0);
             scene.add(axes);
 
             //创建圆柱体
-            var holes = [];
-            var cylinderGeo = new THREE.CylinderGeometry(2, 2, 5, 50, 50, false);
-            var cylinderMat = new THREE.MeshBasicMaterial({
-                color: '#000',
-                // wireframe: true
+            var holes = [{
+                radiusTop: 2,
+                radiusBottom: 2,
+                height: 5,
+                xyz: [50, 3, 20]
+            }, {
+                radiusTop: 2,
+                radiusBottom: 2,
+                height: 5,
+                xyz: [50, 3, -20]
+            }, {
+                radiusTop: 2,
+                radiusBottom: 2,
+                height: 5,
+                xyz: [-50, 3, 20]
+            }, {
+                radiusTop: 2,
+                radiusBottom: 2,
+                height: 5,
+                xyz: [-50, 3, -20]
+            }];
+            holes.forEach(function (hole) {
+                var cylinderGeo = new THREE.CylinderGeometry(hole.radiusTop, hole.radiusBottom, hole.height, 50,
+                    50, true);
+                var cylinderMat = new THREE.MeshBasicMaterial({
+                    color: 0x156289,
+                    emissive: 0x072534,
+                    side: THREE.DoubleSide,
+                    flatShading: true
+                    // wireframe: true
+                });
+                //创建圆柱体网格模型
+                var cylinderMesh = new THREE.Mesh(cylinderGeo, cylinderMat);
+                cylinderMesh.position.set(hole.xyz[0], hole.xyz[1], hole.xyz[2]); //设置圆柱坐标
+                scene.add(cylinderMesh); //向场景添加圆柱体
             });
 
-            //创建圆柱体网格模型
-            var cylinderMesh = new THREE.Mesh(cylinderGeo, cylinderMat);
-            cylinderMesh.position.set(50, 3, 20); //设置圆柱坐标
-            scene.add(cylinderMesh); //向场景添加圆柱体
+            var gridHelper = new THREE.GridHelper(400, 40, 0x0000ff, 0x808080);
+            gridHelper.position.y = -150;
+            gridHelper.position.x = -150;
+            scene.add(gridHelper);
 
             gui = new dat.GUI();
             var aGUI = gui.add(parameters, 'a').min(-1000).max(1000).step(5).name("camera_x").listen();
@@ -170,6 +201,14 @@
                     camera.position.set(camera_x, camera_y, camera_z);
                 }
             );
+
+            //调整窗体大小
+            window.addEventListener('resize', function () {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+            }, false);
         }
 
         function animate() {
