@@ -160,24 +160,18 @@
             }];
             holes.forEach(function (hole) {
                 var cylinderGeo = new THREE.CylinderGeometry(hole.radiusTop, hole.radiusBottom, hole.height, 50,
-                    50, true);
+                    50, false);
                 var cylinderMat = new THREE.MeshBasicMaterial({
-                    color: 0x156289,
-                    emissive: 0x072534,
+                    color: '#000',
                     side: THREE.DoubleSide,
-                    flatShading: true
-                    // wireframe: true
+                    flatShading: true,
+                    // wireframe: false
                 });
                 //创建圆柱体网格模型
                 var cylinderMesh = new THREE.Mesh(cylinderGeo, cylinderMat);
                 cylinderMesh.position.set(hole.xyz[0], hole.xyz[1], hole.xyz[2]); //设置圆柱坐标
                 scene.add(cylinderMesh); //向场景添加圆柱体
             });
-
-            var gridHelper = new THREE.GridHelper(400, 40, 0x0000ff, 0x808080);
-            gridHelper.position.y = -150;
-            gridHelper.position.x = -150;
-            scene.add(gridHelper);
 
             gui = new dat.GUI();
             var aGUI = gui.add(parameters, 'a').min(-1000).max(1000).step(5).name("camera_x").listen();
